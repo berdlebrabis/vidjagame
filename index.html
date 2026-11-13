@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Neon Wave</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <main class="shell">
+    <header><h1>NEON <span>WAVE</span></h1><p>Easy mode · Original arcade wave game</p></header>
+    <section class="game" aria-label="Neon Wave game">
+      <div class="hud"><span id="score">Score: 0</span><span id="best">Best: 0</span></div>
+      <canvas id="canvas" width="900" height="480" aria-label="Hold to fly up, release to fly down"></canvas>
+      <div class="overlay" id="overlay"><h2 id="message">Ready to fly?</h2><p id="hint">Hold Space, mouse, or touch to rise. Release to fall.</p><button id="start">Start game</button></div>
+    </section>
+    <p class="controls"><strong>Controls:</strong> Hold <kbd>Space</kbd> / mouse / touch = rise ↗ · Release = fall ↘ · <kbd>R</kbd> = restart</p>
+  </main>
+</body>
+</html>
