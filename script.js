@@ -8,7 +8,14 @@ try{best=Number(localStorage.getItem("neonWaveBest"))||0}catch(e){}
 bestLabel.textContent="Best: "+best;
 function reset(){cancelAnimationFrame(frameId);y=H/2;trail=[];obstacles=[];distance=0;score=0;spawnDistance=0;clearInput();scoreLabel.textContent="Score: 0";state="playing";overlay.classList.add("hidden");last=performance.now();frameId=requestAnimationFrame(frame)}
 function finish(){state="over";clearInput();message.textContent="Wave crashed!";hint.textContent="Score: "+score+" · Try again!";startButton.textContent="Restart";overlay.classList.remove("hidden");if(score>best){best=score;bestLabel.textContent="Best: "+best;try{localStorage.setItem("neonWaveBest",String(best))}catch(e){}}}
-function spawn(){const gap=225,top=65+Math.random()*125;obstacles.push({x:W+30,top,bottom:top+gap,width:56})}
+function spawn(){
+  const minimumGap=125, startingGap=225;
+  const difficulty=Math.min(Math.max((score-100)/1500,0),1);
+  const gap=startingGap-(startingGap-minimumGap)*difficulty;
+  const center=65+startingGap/2+Math.random()*125;
+  const top=center-gap/2;
+  obstacles.push({x:W+30,top,bottom:top+gap,width:56});
+}
 function update(dt){const step=Math.min(dt/16.667,2);y+=(holding?-verticalSpeed:verticalSpeed)*step;distance+=speed*step;spawnDistance+=speed*step;
 if(spawnDistance>=290){spawnDistance-=290;spawn()}
 for(const o of obstacles)o.x-=speed*step;
