@@ -9,10 +9,10 @@ bestLabel.textContent="Best: "+best;
 function reset(){cancelAnimationFrame(frameId);y=H/2;trail=[];obstacles=[];distance=0;score=0;spawnDistance=0;clearInput();scoreLabel.textContent="Score: 0";state="playing";overlay.classList.add("hidden");last=performance.now();frameId=requestAnimationFrame(frame)}
 function finish(){state="over";clearInput();message.textContent="Wave crashed!";hint.textContent="Score: "+score+" · Try again!";startButton.textContent="Restart";overlay.classList.remove("hidden");if(score>best){best=score;bestLabel.textContent="Best: "+best;try{localStorage.setItem("neonWaveBest",String(best))}catch(e){}}}
 function spawn(){
-  const minimumGap=125, startingGap=225;
-  const difficulty=Math.min(Math.max((score-100)/1500,0),1);
+  const minimumGap=95, startingGap=185;
+  const difficulty=Math.min(Math.max((score-50)/850,0),1);
   const gap=startingGap-(startingGap-minimumGap)*difficulty;
-  const center=65+startingGap/2+Math.random()*125;
+  const center=177.5+Math.random()*125;
   const top=center-gap/2;
   obstacles.push({x:W+30,top,bottom:top+gap,width:56});
 }
