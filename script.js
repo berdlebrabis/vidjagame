@@ -6,6 +6,45 @@ const W=canvas.width,H=canvas.height,playerX=160,speed=4.4,verticalSpeed=4.2,tra
 let state="ready",holding=false,y=H/2,trail=[],obstacles=[],distance=0,score=0,best=0,last=0,spawnDistance=0,frameId=0,spaceHeld=false,pointerId=null;
 try{best=Number(localStorage.getItem("neonWaveBest"))||0}catch(e){}
 bestLabel.textContent="Best: "+best;
+
+const waveStyles = {
+  cyan: { glow: "#00f5ff", fill: "#b8ffff", points: [[13,0],[-10,-10],[-5,0],[-10,10]] },
+  rose: { glow: "#ff67ba", fill: "#ffd0ed", points: [[12,0],[0,-9],[-12,0],[0,9]] },
+  lime: { glow: "#aaff47", fill: "#e0ffae", points: [[12,-8],[4,0],[10,0],[-12,9],[-4,1],[-10,1]] },
+  gold: { glow: "#ffc447", fill: "#ffedaa", points: [[13,0],[-10,-8],[-7,0],[-10,8]] }
+};
+const themes = {
+  midnight: { arena: "#0a1026", grid: "#1a2750", pageGlow: "#242052", pageDark: "#080b1c" },
+  sunset: { arena: "#2b1423", grid: "#573047", pageGlow: "#622542", pageDark: "#190d19" },
+  "deep-sea": { arena: "#061e27", grid: "#16434c", pageGlow: "#13535a", pageDark: "#07191e" },
+  monochrome: { arena: "#17191f", grid: "#343741", pageGlow: "#3d414e", pageDark: "#12131a" }
+};
+
+let waveStyle = waveStyles.cyan;
+let theme = themes.midnight;
+
+function bindAppearance(id, presets, apply) {
+  const select = document.getElementById(id);
+  const key = "neonWave:" + id;
+  try {
+    const saved = localStorage.getItem(key);
+    if (Object.hasOwn(presets, saved)) select.value = saved;
+  } catch {}
+  apply(presets[select.value]);
+  select.addEventListener("change", () => {
+    apply(presets[select.value]);
+    try { localStorage.setItem(key, select.value); } catch {}
+    draw();
+  });
+}
+
+bindAppearance("wave-style", waveStyles, value => { waveStyle = value; });
+bindAppearance("background-theme", themes, value => {
+  theme = value;
+  document.body.style.setProperty("--page-glow", theme.pageGlow);
+  document.body.style.setProperty("--page-dark", theme.pageDark);
+});
+
 function reset(){cancelAnimationFrame(frameId);y=H/2;trail=[];obstacles=[];distance=0;score=0;spawnDistance=0;clearInput();scoreLabel.textContent="Score: 0";state="playing";overlay.classList.add("hidden");last=performance.now();frameId=requestAnimationFrame(frame)}
 function finish(){state="over";clearInput();message.textContent="Wave crashed!";hint.textContent="Score: "+score+" · Try again!";startButton.textContent="Restart";overlay.classList.remove("hidden");if(score>best){best=score;bestLabel.textContent="Best: "+best;try{localStorage.setItem("neonWaveBest",String(best))}catch(e){}}}
 function spawn(){
@@ -26,21 +65,25 @@ score=Math.floor(distance/10);scoreLabel.textContent="Score: "+score;
 if(y<12||y>H-12){finish();return}
 for(const o of obstacles){if(playerX+9>o.x&&playerX-9<o.x+o.width&&(y-9<o.top||y+9>o.bottom)){finish();return}}
 }
-function draw(){ctx.clearRect(0,0,W,H);ctx.fillStyle="#0a1026";ctx.fillRect(0,0,W,H);
-ctx.strokeStyle="#1a2750";ctx.lineWidth=1;const offset=distance%40;
+function draw(){ctx.clearRect(0,0,W,H);ctx.fillStyle=theme.arena;ctx.fillRect(0,0,W,H);
+ctx.strokeStyle=theme.grid;ctx.lineWidth=1;const offset=distance%40;
 for(let x=-offset;x<W;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke()}
 for(let yy=0;yy<H;yy+=40){ctx.beginPath();ctx.moveTo(0,yy);ctx.lineTo(W,yy);ctx.stroke()}
 ctx.strokeStyle="#8c4bff";ctx.shadowColor="#9b45ff";ctx.shadowBlur=12;ctx.lineWidth=4;ctx.strokeRect(2,2,W-4,H-4);ctx.shadowBlur=0;
 for(const o of obstacles){ctx.fillStyle="#492277";ctx.strokeStyle="#f46dff";ctx.lineWidth=3;ctx.shadowColor="#e352ff";ctx.shadowBlur=16;
 ctx.fillRect(o.x,0,o.width,o.top);ctx.strokeRect(o.x,0,o.width,o.top);
 ctx.fillRect(o.x,o.bottom,o.width,H-o.bottom);ctx.strokeRect(o.x,o.bottom,o.width,H-o.bottom);ctx.shadowBlur=0}
-if(trail.length>1){ctx.beginPath();trail.forEach((p,i)=>i?ctx.lineTo(playerX-(distance-p.distance),p.y):ctx.moveTo(playerX-(distance-p.distance),p.y));ctx.strokeStyle="#00f5ff";ctx.lineWidth=3;ctx.shadowColor="#00f5ff";ctx.shadowBlur=16;ctx.stroke();ctx.shadowBlur=0}
-ctx.save();ctx.translate(playerX,y);ctx.rotate(holding?-Math.PI/4:Math.PI/4);ctx.fillStyle="#b8ffff";ctx.strokeStyle="#00f5ff";ctx.lineWidth=3;ctx.shadowColor="#00f5ff";ctx.shadowBlur=20;ctx.beginPath();ctx.moveTo(13,0);ctx.lineTo(-10,-10);ctx.lineTo(-5,0);ctx.lineTo(-10,10);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore()}
+if(trail.length>1){ctx.beginPath();trail.forEach((p,i)=>i?ctx.lineTo(playerX-(distance-p.distance),p.y):ctx.moveTo(playerX-(distance-p.distance),p.y));ctx.strokeStyle=waveStyle.glow;ctx.lineWidth=3;ctx.shadowColor=waveStyle.glow;ctx.shadowBlur=16;ctx.stroke();ctx.shadowBlur=0}
+ctx.save();ctx.translate(playerX,y);ctx.rotate(holding?-Math.PI/4:Math.PI/4);ctx.fillStyle=waveStyle.fill;ctx.strokeStyle=waveStyle.glow;ctx.lineWidth=3;ctx.shadowColor=waveStyle.glow;ctx.shadowBlur=20;ctx.beginPath();const [tip,...edges]=waveStyle.points;
+ctx.moveTo(...tip);
+for(const point of edges)ctx.lineTo(...point);
+ctx.closePath();ctx.fill();ctx.stroke();ctx.restore()}
 function frame(now){if(state!=="playing")return;const dt=now-last;last=now;update(dt);draw();if(state==="playing")frameId=requestAnimationFrame(frame)}
 function updateInput(){holding=spaceHeld||pointerId!==null}
 function clearInput(){spaceHeld=false;pointerId=null;updateInput()}
 
 window.addEventListener("keydown",e=>{
+  if(e.target instanceof HTMLSelectElement)return;
   if(e.code==="KeyR"&&!e.repeat&&!e.metaKey&&!e.ctrlKey&&!e.altKey)reset();
   if(e.code!=="Space"||state!=="playing")return;
   e.preventDefault();

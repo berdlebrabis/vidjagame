@@ -15,6 +15,22 @@
       <canvas id="canvas" width="900" height="480" aria-label="Hold to fly up, release to fly down"></canvas>
       <div class="overlay" id="overlay"><h2 id="message">Ready to fly?</h2><p id="hint">Hold Space, mouse, or touch to rise. Release to fall.</p><button id="start">Start game</button></div>
     </section>
+    <div class="appearance" role="group" aria-label="Game appearance">
+      <label for="wave-style">Wave</label>
+      <select id="wave-style">
+        <option value="cyan">Cyan Arrow</option>
+        <option value="rose">Rose Diamond</option>
+        <option value="lime">Lime Bolt</option>
+        <option value="gold">Gold Dart</option>
+      </select>
+      <label for="background-theme">Background</label>
+      <select id="background-theme">
+        <option value="midnight">Midnight</option>
+        <option value="sunset">Sunset</option>
+        <option value="deep-sea">Deep Sea</option>
+        <option value="monochrome">Monochrome</option>
+      </select>
+    </div>
     <p class="controls"><strong>Controls:</strong> Hold <kbd>Space</kbd> / mouse / touch = rise ↗ · Release = fall ↘ · <kbd>R</kbd> = restart</p>
   </main>
 </body>
