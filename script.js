@@ -2,7 +2,7 @@
 const canvas=document.getElementById("canvas"),ctx=canvas.getContext("2d");
 const overlay=document.getElementById("overlay"),message=document.getElementById("message"),hint=document.getElementById("hint"),startButton=document.getElementById("start");
 const scoreLabel=document.getElementById("score"),bestLabel=document.getElementById("best");
-const W=canvas.width,H=canvas.height,playerX=160,speed=3.1,verticalSpeed=3.2;
+const W=canvas.width,H=canvas.height,playerX=160,speed=4.4,verticalSpeed=4.2,trailLength=123;
 let state="ready",holding=false,y=H/2,trail=[],obstacles=[],distance=0,score=0,best=0,last=0,spawnDistance=0,frameId=0,spaceHeld=false,pointerId=null;
 try{best=Number(localStorage.getItem("neonWaveBest"))||0}catch(e){}
 bestLabel.textContent="Best: "+best;
@@ -13,7 +13,8 @@ function update(dt){const step=Math.min(dt/16.667,2);y+=(holding?-verticalSpeed:
 if(spawnDistance>=290){spawnDistance-=290;spawn()}
 for(const o of obstacles)o.x-=speed*step;
 obstacles=obstacles.filter(o=>o.x+o.width>-10);
-trail.push({x:playerX,y});if(trail.length>42)trail.shift();
+trail.push({distance,y});
+while(distance-trail[0].distance>trailLength)trail.shift();
 score=Math.floor(distance/10);scoreLabel.textContent="Score: "+score;
 if(y<12||y>H-12){finish();return}
 for(const o of obstacles){if(playerX+9>o.x&&playerX-9<o.x+o.width&&(y-9<o.top||y+9>o.bottom)){finish();return}}
@@ -26,7 +27,7 @@ ctx.strokeStyle="#8c4bff";ctx.shadowColor="#9b45ff";ctx.shadowBlur=12;ctx.lineWi
 for(const o of obstacles){ctx.fillStyle="#492277";ctx.strokeStyle="#f46dff";ctx.lineWidth=3;ctx.shadowColor="#e352ff";ctx.shadowBlur=16;
 ctx.fillRect(o.x,0,o.width,o.top);ctx.strokeRect(o.x,0,o.width,o.top);
 ctx.fillRect(o.x,o.bottom,o.width,H-o.bottom);ctx.strokeRect(o.x,o.bottom,o.width,H-o.bottom);ctx.shadowBlur=0}
-if(trail.length>1){ctx.beginPath();trail.forEach((p,i)=>i?ctx.lineTo(p.x-(trail.length-1-i)*3,p.y):ctx.moveTo(p.x-(trail.length-1-i)*3,p.y));ctx.strokeStyle="#00f5ff";ctx.lineWidth=3;ctx.shadowColor="#00f5ff";ctx.shadowBlur=16;ctx.stroke();ctx.shadowBlur=0}
+if(trail.length>1){ctx.beginPath();trail.forEach((p,i)=>i?ctx.lineTo(playerX-(distance-p.distance),p.y):ctx.moveTo(playerX-(distance-p.distance),p.y));ctx.strokeStyle="#00f5ff";ctx.lineWidth=3;ctx.shadowColor="#00f5ff";ctx.shadowBlur=16;ctx.stroke();ctx.shadowBlur=0}
 ctx.save();ctx.translate(playerX,y);ctx.rotate(holding?-Math.PI/4:Math.PI/4);ctx.fillStyle="#b8ffff";ctx.strokeStyle="#00f5ff";ctx.lineWidth=3;ctx.shadowColor="#00f5ff";ctx.shadowBlur=20;ctx.beginPath();ctx.moveTo(13,0);ctx.lineTo(-10,-10);ctx.lineTo(-5,0);ctx.lineTo(-10,10);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore()}
 function frame(now){if(state!=="playing")return;const dt=now-last;last=now;update(dt);draw();if(state==="playing")frameId=requestAnimationFrame(frame)}
 function updateInput(){holding=spaceHeld||pointerId!==null}
